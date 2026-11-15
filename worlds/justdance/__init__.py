@@ -22,7 +22,7 @@ class JustDanceWebWorld(WebWorld):
 
 class JustDanceWorld(World):
     """
-    Just Dance is adancing rhythm game
+    Just Dance is a dancing rhythm game
     """
     game = "Just Dance"
     web = JustDanceWebWorld()
