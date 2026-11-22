@@ -2,6 +2,7 @@ from typing import Dict, Union, List
 from worlds.AutoWorld import World, WebWorld
 from BaseClasses import ItemClassification, Region, LocationProgressType, Tutorial, CollectionState
 from worlds.generic.Rules import add_rule
+from locations_items import JustDanceItem, JustDanceLocation
 
 #https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/world%20api.md
 
