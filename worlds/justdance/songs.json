@@ -1251,7 +1251,7 @@
     { "title": "You Never Can Tell", "game": "Just Dance 2016", "difficulty": "Easy", "coaches": 2, "jdplus": true },
     { "title": "You Should See Me in a Crown", "game": "Just Dance 2024", "difficulty": "Medium", "coaches": 2, "jdplus": false },
     { "title": "You Spin Me Round (Like a Record)", "game": "Just Dance 2015", "difficulty": "Medium", "coaches": 1, "jdplus": true },
-    { "title": "You're On My Mind", "game": "Just Dance 2015", "difficulty": "Medium", "jdplus": false },
+    { "title": "You're On My Mind", "game": "Just Dance 2015", "difficulty": "Medium", "coaches": 4, "jdplus": false },
     { "title": "You're the First, the Last, My Everything", "game": "Just Dance 4", "difficulty": "Easy", "coaches": 4, "jdplus": false },
     { "title": "You're The One That I Want", "game": "Just Dance 2016", "difficulty": "Easy", "coaches": 2, "jdplus": false },
     { "title": "YOUTH", "game": "Just Dance Unlimited", "difficulty": "Easy", "coaches": 1, "jdplus": false },
