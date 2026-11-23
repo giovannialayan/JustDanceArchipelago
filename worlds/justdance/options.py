@@ -13,9 +13,10 @@ class SongCount(Range):
 class StartingSongs(Range):
     """
     number of songs to start unlocked
+    note that for every starting song there will be a random song that contains no check, but completing it still counts toward the goal
     """
     display_name = "starting songs"
-    range_start = 1
+    range_start = 0
     range_end = 1180
     default = 5
 

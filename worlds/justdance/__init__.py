@@ -1,8 +1,7 @@
 from typing import Dict, Union, List
 from worlds.AutoWorld import World, WebWorld
 from BaseClasses import ItemClassification, Region, LocationProgressType, Tutorial, CollectionState
-from worlds.generic.Rules import add_rule
-from .locations_items import JustDanceItem, JustDanceLocation, ItemData, item_table, jd_locations
+from .locations_items import JustDanceItem, JustDanceLocation, ItemData, item_table, jd_locations, jd_item_id_to_name, jd_item_name_to_id, jd_location_id_to_name, jd_location_name_to_id
 from .options import JustDanceOptions
 
 #https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/world%20api.md
@@ -34,12 +33,21 @@ class JustDanceWorld(World):
 
     topology_present = False
 
-    locations_set = 0
+    item_name_to_id = jd_item_name_to_id
+    item_id_to_name = jd_item_id_to_name
+
+    location_name_to_id = jd_location_name_to_id
+    location_id_to_name = jd_location_id_to_name
+
+    item_name_groups = {"songs": {song for song in item_table}}
 
     song_count = 5
     game_pool: list[str] = ["Just Dance 2023", "Just Dance 2024", "Just Dance 2025", "Just Dance 2026", "Just Dance: Decades of Hits", "Just Dance+"]
 
     itempool: list
+
+    starting_songs: Dict[str, ItemData]
+    no_check_songs: Dict[str, ItemData]
 
     game_dict = {
         "1": "Just Dance 1",
@@ -64,34 +72,45 @@ class JustDanceWorld(World):
     }
 
     def generate_early(self):
-        self.song_count = self.options.song_count
+        self.song_count = self.options.song_count.value
         self.game_pool = [self.game_dict[game] for game in list(self.options.game_pool.value)]
 
         if len(self.game_pool) == 0:
             self.game_pool = list(self.game_dict.values())
 
-    def create_items(self):
         songs_to_unlock = self.options.starting_songs.value
-
-        excluded_items: Dict[str, ItemData]
+        
+        self.starting_songs = {}
+        self.no_check_songs = {}
         song_pool_tuple_list = [
             (key, item)
             for key, item in item_table.items()
-            if item.jdgame in self.game_pool
+            if item.jdgame in self.game_pool or ("Just Dance+" in self.game_pool and item.jdplus)
         ]
-        for i in range(songs_to_unlock):
+        for _ in range(songs_to_unlock):
             song = self.random.choice(song_pool_tuple_list)
             song_name = song[0]
             song_data = song[1]
+        
+            self.starting_songs[song_name] = song_data
+            song_pool_tuple_list.remove(song)
+        for _ in range(songs_to_unlock):
+            song = self.random.choice(song_pool_tuple_list)
+            song_name = song[0]
+            song_data = song[1]
+                
+            self.no_check_songs[song_name] = song_data
+            song_pool_tuple_list.remove(song)
 
+    def create_items(self):
+        for song_name in self.starting_songs:
             precollected_item = self.create_item(song_name)
             self.multiworld.push_precollected(precollected_item)
-            excluded_items[song_name] = song_data
-            song_pool_tuple_list.remove(song)
 
         self.itempool = []
         for item_name in item_table:
-            if not item_name in excluded_items:
+            if not item_name in self.starting_songs and \
+                (item_table[item_name].jdgame in self.game_pool or ("Just Dance+" in self.game_pool and item_table[item_name].jdplus)):
                 self.itempool.append(self.create_item(item_name))
 
         self.multiworld.itempool += self.itempool
@@ -103,35 +122,23 @@ class JustDanceWorld(World):
     def create_regions(self):
         menu_region = Region("Menu", self.player, self.multiworld)
 
-        placed_locations: List[JustDanceLocation] = list()
-
         song_pool_tuple_list = [
             (key, item)
             for key, item in jd_locations.items()
-            if item.jdgame in self.game_pool
+            if item.jdgame in self.game_pool or ("Just Dance+" in self.game_pool and item.jdplus) and item.name
         ]
 
         for song_location in song_pool_tuple_list:
-            new_location = JustDanceLocation(self.player, song_location[1].name, song_location[0], menu_region)
-            new_location.progress_type = LocationProgressType.DEFAULT
+            if not song_location[1].name in self.no_check_songs:
+                new_location = JustDanceLocation(self.player, song_location[1].name, song_location[0], menu_region)
+                new_location.progress_type = LocationProgressType.DEFAULT
 
-            self.locations_set += 1
-            menu_region.locations.append(new_location)
-            placed_locations.append(new_location)
+                menu_region.locations.append(new_location)
         
-        self.multiworld.regions.append(menu_region)
+        self.multiworld.regions.append(menu_region)        
 
-        #completion condition
-        def can_reach_count(state: CollectionState, locations: List[JustDanceLocation], count: int = 1) -> bool:
-            counter = 0
-            for loc in locations:
-                if state.can_reach_location(loc.name, self.player):
-                    counter += 1
-                    if counter >= count:
-                        return True
-            return False
-
-        self.multiworld.completion_condition[self.player] = lambda state: can_reach_count(state, placed_locations, self.song_count)
+    def set_rules(self):
+        self.multiworld.completion_condition[self.player] = lambda state: state.has_group("songs", self.player, self.song_count)
 
     def fill_slot_data(self):
         base_data = {
