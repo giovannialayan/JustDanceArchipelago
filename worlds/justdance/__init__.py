@@ -87,6 +87,10 @@ class JustDanceWorld(World):
             for key, item in item_table.items()
             if item.jdgame in self.game_pool or ("Just Dance+" in self.game_pool and item.jdplus)
         ]
+
+        if self.song_count > len(song_pool_tuple_list):
+            self.song_count = len(song_pool_tuple_list)
+
         for _ in range(songs_to_unlock):
             song = self.random.choice(song_pool_tuple_list)
             song_name = song[0]
