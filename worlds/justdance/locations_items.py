@@ -44,7 +44,7 @@ songsJson = json.loads(songsData.decode("utf-8"))
 
 for song in songsJson["songs"]:
     for coach in range(song["coaches"]):
-        location_name = song["game"] + (" (+)" if song["jdplus"] and song["game"] != "plus" else "") + " - " + song["title"] + (" coach " + str(coach + 1) if song["coaches"] > 1 else "")
+        location_name = song["game"] + (" (+)" if song["jdplus"] and song["game"] != "plus" else "") + " - " + song["title"] + (" - coach " + str(coach + 1) if song["coaches"] > 1 else "")
         location_id = loc_prev_id
         loc_prev_id += 1
         jd_locations[location_id] = LocationData(location_name, song["title"], song["game"], coach, song["difficulty"], song["jdplus"])
